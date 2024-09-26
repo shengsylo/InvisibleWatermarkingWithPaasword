@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Image Watermarking Dashboard</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.3s, color 0.3s; /* Smooth transitions */
+        }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #1d1f21;
+            color: #c2c7d0;
+        }
+
+        .dark-mode .card {
+            background-color: #2c2e30;
+            color: #c2c7d0;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 40px;
+        }
+
+        .header h2 {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .header p {
+            color: #7f8c8d;
+        }
+
+        .dark-mode .header h2 {
+            color: #f1f1f1;
+        }
+
+        /* Form & Results Sections */
+        .form-section, .results-section {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 25px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, color 0.3s; /* Smooth transitions */
+        }
+
+        .dark-mode .form-section, .dark-mode .results-section {
+            background: #2c2e30;
+        }
+
+        .results-section {
+            margin-top: 40px;
+        }
+
+        /* Buttons */
+        .btn-primary, .btn-success, .btn-info {
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 12px 30px;
+            border-radius: 30px;
+        }
+
+        .btn-primary:hover {
+            background-color: #1e3799;
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Image Container */
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Scores */
+        .score {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #27ae60;
+        }
+
+        .badge {
+            font-size: 1rem;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #7f8c8d;
+        }
+
+        .dark-mode .footer {
+            background-color: #2c2e30;
+            color: #c2c7d0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Dark Mode Toggle -->
+<div class="dark-mode-toggle">
+    <button id="toggle-dark-mode" class="btn btn-dark"><i class="fas fa-moon"></i> Dark Mode</button>
+</div>
+
+<div class="container">
+
+    <!-- Form Section -->
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h2><i class="fas fa-hospital-user"></i> Hospital Image Watermarking</h2>
+            <p class="lead">Upload, Process, and Extract Watermarks with Ease</p>
+        </div>
+    
+        <!-- Form Section -->
+        <div class="form-section">
+            {% if not request.method == 'POST' %}
+            <form method="POST" enctype="multipart/form-data" id="upload-form" onsubmit="return validateForm()">
+                <!-- Error message container -->
+                <div id="error-messages" class="alert alert-danger" style="display:none;"></div>
+    
+                <!-- Image Upload -->
+                <div class="form-group mb-4">
+                    <label for="image" class="form-label">Upload Image</label>
+                    <input type="file" class="form-control" id="image" name="image" required>
+                </div>
+    
+                <!-- Personal Info -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="full_name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="dob" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="dob" name="dob" required>
+                    </div>
+                </div>
+    
+                <!-- Gender and Contact -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="gender" class="form-label">Gender</label>
+                        <select class="form-control" id="gender" name="gender" required>
+                            <option value="" disabled selected>Select Gender</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="contact_number" class="form-label">Contact Number</label>
+                        <input type="tel" class="form-control" id="contact_number" name="contact_number" required 
+                               pattern="^01[0-46-9]-?\d{7,8}$" 
+                               placeholder="e.g. 0123456789">
+                        <small class="form-text text-muted">Format: starts with 01X followed by 7 or 8 digits (e.g., 0123456789).</small>
+                    </div>
+                    
+                </div>
+    
+                <!-- Additional Info -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="race" class="form-label">Race</label>
+                        <select class="form-control" id="race" name="race" required>
+                            <option value="" disabled selected>Select Race</option>
+                            <option value="Chinese">Chinese</option>
+                            <option value="Malay">Malay</option>
+                            <option value="Indian">Indian</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="disease" class="form-label">Disease</label>
+                        <input type="text" class="form-control" id="disease" name="disease" required>
+                    </div>
+                </div>
+    
+                <div class="form-group mb-4">
+                    <label for="passkey" class="form-label">Passkey in 6 numeric (required for encryption and extraction):</label>
+                    <input type="password" class="form-control" id="passkey" name="passkey" required>
+                </div>
+    
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-upload"></i> Upload & Process
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    
+
+    <!-- Results Section -->
+    {% if request.method == 'POST' %}
+    <div class="results-section">
+        <h4 class="text-center"><i class="fas fa-chart-line"></i> Processing Results</h4>
+        <hr>
+
+        <div class="alert alert-success">
+            <strong>Success!</strong> {{original_image.split('/')[-1]}} processed successfully. See the results below.
+        </div>
+
+        <!-- BER Result
+        <h5>Bit Error Rate (BER):</h5>
+        <p class="score">LSB Watermarking: {{ '%.10f'|format(12.00) }}</p> -->
+
+        <!-- Decrypted Watermark -->
+        <!-- <h5>Decrypted Watermark:</h5>
+        <p>{{ decrypted_lsb }}</p> -->
+
+        <!-- Download Processed Image -->
+        <!-- <a href="{{ url_for('download_file', filename=download_image) }}" class="btn btn-success btn-block">
+            <i class="fas fa-download"></i> Download Watermarked Image
+        </a> -->
+
+        <!-- Denoising Results -->
+        <h5>Denoising Results:</h5>
+        <div class="row">
+            {% for method, data in denoise_results.items() %}
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <img src="{{ url_for('static', filename='uploads/' + data.image.split('/')[-1]) }}" class="card-img-top" alt="{{ method }} Denoised Image">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ method }} Denoising</h6>
+                        <p class="score">SSIM: {{ '%.4f'|format(data.ssim) }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Best Watermarking Method -->
+        <div class="alert alert-info mt-4">
+            Denoise Method:  <strong>{{ best_denoise_method }}</strong> 
+        </br>
+            Best Watermarking Method: <strong>{{ best_watermark_method }}</strong> (PSNR: <strong>{{ '%.2f'|format(psnr_best) }}</strong> dB, BER: <strong>{{ '%.10f'|format(ber_best) }}</strong>)
+        </br>
+            Other Method: <strong>Wavelet</strong> (PSNR: <strong>{{ '%.2f'|format(watermark_results.Wavelet.psnr) }}</strong> dB, BER: <strong>{{ '%.10f'|format(watermark_results.Wavelet.ber) }}</strong>)
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <img src="{{ url_for('static', filename='uploads/' + watermark_results.Wavelet.image.split('/')[-1]) }}" class="card-img-top" alt="{{ method }} Denoised Image">
+                    <div class="card-body">
+                        <h6 class="card-title"> Wavelet </h6>
+                        <p class="score">PSNR: {{ '%.4f'|format(watermark_results.Wavelet.psnr) }}</p>
+                        <p class="score">BER: {{ '%.4f'|format(watermark_results.Wavelet.ber) }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <img src="{{ url_for('static', filename='uploads/' + best_watermarked_image.split('/')[-1]) }}" class="card-img-top" alt="{{ method }} Denoised Image">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ best_watermark_method }} </h6>
+                        <p class="score">PSNR: {{ '%.4f'|format(psnr_best) }}</p>
+                        <p class="score">BER: {{ '%.4f'|format(ber_best) }}</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+
+        <!-- Passkey -->
+        <div class="alert alert-warning mt-4">
+            <h5>Passkey</h5>
+            <p><strong> *** {{ passkey }}</strong></p>
+            <p><em>Keep this passkey safe for future watermark extraction.</em></p>
+        </div>
+
+        <!-- Download & Navigation Buttons -->
+        <a href="{{ url_for('download_file', filename=best_watermarked_image.split('/')[-1]) }}" class="btn btn-success btn-block">
+            <i class="fas fa-download"></i> Download Best Watermarked Image
+        </a>
+        <a href="{{ url_for('upload_image') }}" class="btn btn-secondary btn-block"><i class="fas fa-redo"></i> Process Another Image</a>
+        <a href="{{ url_for('extract_watermark') }}" class="btn btn-info btn-block"><i class="fas fa-search"></i> Extract Watermark</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>&copy; 2024 Hospital Watermarking System | All rights reserved</p>
+</div>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JavaScript for Dark Mode -->
+<script>
+
+    function validateForm() {
+        console.log("helloworld")
+        let errors = [];
+        let fullName = document.getElementById('full_name').value;
+        let dob = document.getElementById('dob').value;
+        let gender = document.getElementById('gender').value;
+        let contactNumber = document.getElementById('contact_number').value;
+        let race = document.getElementById('race').value;
+        
+        // Validate Full Name (no digits allowed)
+        if (/\d/.test(fullName)) {
+            errors.push("Full Name cannot contain digits.");
+        }
+
+        // Validate Date of Birth (cannot be in the future)
+        let dobDate = new Date(dob);
+        if (dobDate > new Date()) {
+            errors.push("Date of Birth cannot be in the future.");
+        }
+
+        const today = new Date();
+
+        const ageInMilliseconds = today - dobDate;
+        const ageInYears = ageInMilliseconds / (1000 * 60 * 60 * 24 * 365.25);
+
+        // Check if the baby is less than 1 years old OR hasn't been born yet
+        if (ageInYears < 1 || dobDate.getFullYear() > today.getFullYear()) {
+            errors.push("The age cannot below 1."); 
+        }
+
+        // For debugging or understanding the dates:
+        console.log("dobDate.getFullYear:", dobDate.getFullYear());
+        console.log("new Date().getFullYear:", today.getFullYear());
+            
+        // Validate Gender
+        if (gender !== 'M' && gender !== 'F') {
+            errors.push("Gender must be either 'Male' or 'Female'.");
+        }
+
+        // Validate Contact Number (must be 10 or 11 digits)
+        // Validate Contact Number (must be in Malaysian format, starting with 01 and contain 10-11 digits)
+        if (!/^01[0-46-9]\d{7,8}$/.test(contactNumber)) {
+            errors.push("Contact Number must follow the Malaysian format (e.g., 0123456789).");
+        }
+
+
+        // Validate Race
+        if (['Chinese', 'Malay', 'Indian'].indexOf(race) === -1) {
+            errors.push("Race must be Chinese, Malay, or Indian.");
+        }
+
+        // If there are errors, prevent form submission and display them
+        if (errors.length > 0) {
+            let errorMessagesDiv = document.getElementById('error-messages');
+            errorMessagesDiv.innerHTML = errors.join("<br>");
+            errorMessagesDiv.style.display = "block";
+            return false;
+        }
+
+        return true;
+    }
+
+    const toggleDarkMode = document.getElementById('toggle-dark-mode');
+    const body = document.body;
+
+    // Check local storage and apply dark mode if needed
+    if (localStorage.getItem('dark-mode-enabled') === 'true') {
+        body.classList.add('dark-mode');
+        toggleDarkMode.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+    }
+
+    // Toggle dark mode on button click
+    toggleDarkMode.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+        if (body.classList.contains('dark-mode')) {
+            toggleDarkMode.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+            localStorage.setItem('dark-mode-enabled', 'true');
+        } else {
+            toggleDarkMode.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+            localStorage.setItem('dark-mode-enabled', 'false');
+        }
+    });
+</script>
+
+</body>
+</html>
